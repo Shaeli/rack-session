@@ -426,9 +426,22 @@ describe Rack::Session::Cookie do
       secrets: @secret, legacy_hmac_secret: legacy_secret, legacy_hmac: legacy_hmac
     }]
 
+    # First, read the legacy cookie and increment
     response = response_for(app: app, cookie: legacy_cookie)
     response.body.must_equal ({"counter"=>2}.to_s)
 
+    # # Now, check that the new cookie is written with the --$HMAC suffix
+    # cookie_value = response["Set-Cookie"].split('=', 2).last.split(';').first
+    # puts "Cookie Value: #{cookie_value}"
+    # puts "Set-Cookie: #{response["Set-Cookie"]}"
+    # data, sep, digest = cookie_value.rpartition('--')
+    # decoded_cookie = Base64.strict_decode64(Rack::Utils.unescape(data))
+    # puts "Decoded Cookie: #{decoded_cookie}"
+    # expect(sep).must_equal('--')
+    # expected_digest = OpenSSL::HMAC.hexdigest(legacy_hmac, legacy_secret, decoded_cookie)
+    # expect(digest).must_equal(expected_digest)
+
+    # # Replay the cookie and check increment again
     response = response_for(app: app, cookie: response)
     response.body.must_equal ({"counter"=>3}.to_s)
   end
